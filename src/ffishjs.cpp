@@ -269,6 +269,34 @@ public:
     return true;
   }
 
+  // Returns a string representing the result of the game
+  // 0-1, 1-0, 1/2-1/2, or * (if the game is ongoing)
+  std::string get_game_result(bool claimOptional) const {
+    Value result;
+    bool gameEnd = false;
+    if (MoveList<LEGAL>(pos).size()) {
+      if (claimOptional)
+        gameEnd = pos.is_optional_game_end(result);
+      if (!gameEnd)
+        return "*";
+    }
+
+    if (!gameEnd)
+      gameEnd = pos.is_immediate_game_end(result);
+    if (!gameEnd)
+      result = pos.checkers() ? pos.checkmate_value() : pos.stalemate_value();
+
+    if (result == 0)
+      return "1/2-1/2";
+    if (pos.side_to_move() == BLACK)
+      result = -result;
+    return result < 0 ? "0-1" : "1-0";
+  }
+
+  std::string get_game_result() const {
+    return get_game_result(false);
+  }
+
   bool is_check() const {
     return pos.checkers();
   }
@@ -627,6 +655,8 @@ EMSCRIPTEN_BINDINGS(ffish_js) {
     .function("halfmoveClock", &Board::halfmove_clock)
     .function("gamePly", &Board::game_ply)
     .function("isGameOver", &Board::is_game_over)
+    .function("getGameResult", select_overload<std::string() const>(&Board::get_game_result))
+    .function("getGameResult", select_overload<std::string(bool) const>(&Board::get_game_result))
     .function("isCheck", &Board::is_check)
     .function("isBikjang", &Board::is_bikjang)
     .function("moveStack", &Board::move_stack)
