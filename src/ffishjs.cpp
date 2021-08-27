@@ -264,6 +264,10 @@ public:
   }
 
   bool is_game_over() const {
+    bool insufficentWhite = has_insufficient_material(WHITE, pos);
+    bool insufficentBlack = has_insufficient_material(BLACK, pos);
+    if (insufficentWhite && insufficentBlack)
+      return true;
     for (const ExtMove& move: MoveList<LEGAL>(pos))
       return false;
     return true;
@@ -274,11 +278,19 @@ public:
   std::string get_game_result(bool claimOptional) const {
     Value result;
     bool gameEnd = false;
-    if (MoveList<LEGAL>(pos).size()) {
-      if (claimOptional)
-        gameEnd = pos.is_optional_game_end(result);
-      if (!gameEnd)
-        return "*";
+    bool insufficentWhite = has_insufficient_material(WHITE, pos);
+    bool insufficentBlack = has_insufficient_material(BLACK, pos);
+    if (insufficentWhite && insufficentBlack) {
+      result = VALUE_DRAW; // TODO, this might be a configurable value
+      gameEnd = true;
+    }
+    if (!gameEnd) {
+      if (MoveList<LEGAL>(pos).size()) {
+        if (claimOptional)
+          gameEnd = pos.is_optional_game_end(result);
+        if (!gameEnd)
+          return "*";
+      }
     }
 
     if (!gameEnd)
