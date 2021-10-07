@@ -95,6 +95,7 @@ endif
 
 ### 2.1. General and architecture defaults
 largeboards = no
+check_shogi_pawn_drop_mate_illegal = no
 all = no
 precomputedmagics = yes
 nnue = no
@@ -351,6 +352,11 @@ endif
 # Enable all variants, even heavyweight ones like amazons
 ifneq ($(all),no)
 	CXXFLAGS += -DALLVARS
+endif
+
+# Check for illegal shogi pawn drops when generating legal moves
+ifneq ($(check_shogi_pawn_drop_mate_illegal),no)
+	CXXFLAGS += -DCHECK_SHOGI_PAWN_DROP_MATE_ILLEGAL
 endif
 
 ifeq ($(COMP),)

@@ -968,6 +968,23 @@ bool Position::legal(Move m) const {
               return false;
   }
 
+  #ifdef CHECK_SHOGI_PAWN_DROP_MATE_ILLEGAL
+  // Illegal shogi pawn drop mate
+  // SUPER slow!!
+  if (var->shogiPawnDropMateIllegal && type_of(m) == DROP && type_of(moved_piece(m)) == SHOGI_PAWN && gives_check(m))
+  {
+      StateInfo info;
+      do_move(m, info, true);
+      // Recursive, super slow!!
+      // Can even end calling this function multiple times, but in normal shogi this should only be reached a max of two
+      // times since there can only be two kings.
+      size_t num_moves = MoveList<LEGAL>(this).size();
+      undo_move(m);
+      if (num_moves == 0)
+        return false;
+  }
+  #endif // CHECK_SHOGI_PAWN_DROP_MATE_ILLEGAL
+
   // No legal moves from target square
   if (immobility_illegal() && (type_of(m) == DROP || type_of(m) == NORMAL) && !(moves_bb(us, type_of(moved_piece(m)), to, 0) & board_bb()))
       return false;
